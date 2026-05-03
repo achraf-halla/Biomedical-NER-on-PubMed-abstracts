@@ -131,6 +131,79 @@ The pipeline runs in three steps, each producing a stable artifact:
    (specificity above chance). NetworkX for analysis, pyvis for
    interactive HTML.
 
+
+## Findings
+
+Snapshot of recent (2025-2026) PubMed literature on "kinase inhibitor cancer",
+1,450 abstracts, 49,594 raw entity occurrences extracted via scispaCy.
+
+### Normalisation impact
+
+Hand-curated normalisation (alias map + extended stop-list,
+`src/normalize.py`) produced a meaningfully cleaner network:
+
+| Metric | Raw | Normalised | Change |
+|---|---|---|---|
+| Entity occurrences | 49,594 | 45,908 | -7.4% |
+| Graph nodes | 347 | 242 | -30% |
+| Graph edges | 1,934 | 804 | -58% |
+| Top-node betweenness share | 64.8% | 30.6% | -34 pts |
+| Top hub | "tyrosine" (artifact) | tyrosine kinase inhibitor (real drug class) | — |
+
+The 34-point drop in top-node betweenness share is the most important
+single number: it shows the network's information flow is no longer
+dominated by an artificial hub.
+
+### Recovered drug-target-disease clusters
+
+Greedy modularity recovers eight biologically coherent communities:
+
+- **EGFR-TKIs in NSCLC** (87 nodes) — tyrosine kinase inhibitor, EGFR,
+  NSCLC, LUAD, gefitinib, erlotinib, afatinib, T790M resistance.
+- **Multi-kinase inhibitors in HCC/RCC** (41) — lenvatinib, sorafenib,
+  cabozantinib, with HCC and RCC as primary indications.
+- **BCR-ABL in CML** (24) — imatinib, dasatinib, nilotinib, with the
+  treatment-free remission (TFR) line of research surfacing as a
+  satellite topic.
+- **BTK / HER2** (50) — both BTK inhibitors (ibrutinib, CLL) and HER2-
+  targeted therapy (trastuzumab, neratinib, breast cancer). Default
+  modularity merges these; resolution=1.5 splits them cleanly.
+- **Immune checkpoint** (11) — PD-1, PD-L1, CD8, T cells.
+- **MEK pathway** (4) — MEK, ERK, MAPK, trametinib.
+- **JAK/MPN** (2) — ruxolitinib, JAK.
+- **AML/FLT3** (2) — acute myeloid leukemia and FLT3.
+
+### Highest-confidence drug-target pairs (PMI ranked)
+
+| Drug | Target | PMI | Status |
+|---|---|---|---|
+| neratinib | HER2 | 4.59 | HER2+ breast cancer (approved) |
+| ibrutinib | BTK | 3.87 | CLL/MCL (approved) |
+| trastuzumab | HER2 | 4.05 | HER2+ breast (approved) |
+| imatinib | PDGFRA | 4.01 | GIST (approved) |
+| imatinib | GIST | 3.78 | (clinical pair) |
+| ibrutinib | CLL | 4.03 | (clinical pair) |
+| nivolumab | RCC | 3.03 | (clinical pair) |
+| cabozantinib | RCC | 2.92 | (clinical pair) |
+| sorafenib | HCC | 2.64 | (clinical pair) |
+
+Every one of these is a current standard-of-care relationship,
+recovered from text alone with no curated drug-target database.
+
+### Honest limitations
+
+- **No UMLS linking.** Some legitimate distinctions are lost (e.g.
+  "DLBCL" merged with "B-cell lymphoma"). A production system would
+  use `scispacy.linking` against the UMLS Metathesaurus.
+- **Misclassified entity types persist.** "T790M" is an EGFR mutation
+  but scispaCy tags it as GENE; "TFR" sometimes means "transferrin
+  receptor" and sometimes "treatment-free remission" depending on
+  context. The pipeline can't disambiguate without context.
+- **Recent-snapshot bias.** Aurora kinase inhibitors (peak research
+  2010-2018) are underrepresented relative to their historic
+  importance. Re-running with a broader date range would give a more
+  evolutionary view.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
