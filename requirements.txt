@@ -1,0 +1,15 @@
+biopython>=1.83
+pandas>=2.0
+numpy>=1.24
+matplotlib>=3.7
+seaborn>=0.13
+jupyterlab>=4.0
+
+spacy>=3.7,<3.8
+scispacy>=0.5.4
+networkx>=3.2
+pyvis>=0.3.2
+
+# scispaCy models are installed from direct wheel URLs:
+#   pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_ner_bc5cdr_md-0.5.4.tar.gz
+#   pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_ner_bionlp13cg_md-0.5.4.tar.gz
